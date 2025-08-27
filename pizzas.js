@@ -1,4 +1,4 @@
-let pizzaJson = [
+const pizzaJson = [
   {
     id: 1,
     name: "Mediterranean Delight",
