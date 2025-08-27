@@ -77,18 +77,88 @@ c(".pizzaInfo--addButton").addEventListener("click", () => {
 
   let identifier = `${pizzaJson[modalKey].id}@${size}`;
 
-  let key = cart.findIndex(item => item.identifier === identifier);
+  let key = cart.findIndex((item) => item.identifier === identifier);
 
-  if (key > -1){
+  if (key > -1) {
     cart[key].qt += modalQt;
   } else {
     cart.push({
       identifier,
       id: pizzaJson[modalKey].id,
       size,
-      qt: modalQt
+      qt: modalQt,
     });
   }
-
+  updateCart();
   closeModal();
 });
+
+c(".menu-openner").addEventListener("click", () => {
+  if (cart.length > 0) {
+    c("aside").style.left = "0";
+  }
+});
+
+c(".menu-closer").addEventListener("click", () => {
+  c("aside").style.left = "100vw";
+});
+
+function updateCart() {
+  c(".menu-openner span").innerHTML = cart.length;
+  if (cart.length > 0) {
+    c("aside").classList.add("show");
+    c(".cart").innerHTML = "";
+
+    let subtotal = 0;
+    let discount = 0;
+    let total = 0;
+
+    for (let i in cart) {
+      let pizzaItem = pizzaJson.find((item) => item.id === cart[i].id);
+      subtotal += pizzaItem.price * cart[i].qt;
+      let cartItem = c(".models .cart--item").cloneNode(true);
+
+      let pizzaSizeName;
+      switch (cart[i].size) {
+        case 0:
+          pizzaSizeName = "S";
+          break;
+        case 1:
+          pizzaSizeName = "M";
+          break;
+        case 2:
+          pizzaSizeName = "L";
+          break;
+      }
+      let pizzaName = `${pizzaItem.name} (${pizzaSizeName})`;
+
+      cartItem.querySelector("img").src = pizzaItem.img;
+      cartItem.querySelector(".cart--item-nome").innerHTML = pizzaName;
+      cartItem.querySelector(".cart--item--qt").innerHTML = cart[i].qt;
+      cartItem.querySelector(".cart--item-qtmenos").addEventListener("click", () => {
+        if (cart[i].qt > 1) {
+          cart[i].qt--;
+        } else {
+          cart.splice(i, 1);
+        }
+        updateCart();
+      });
+      cartItem.querySelector(".cart--item-qtmais").addEventListener("click", () => {
+        cart[i].qt++;
+        updateCart();
+      });
+
+      c("aside .cart").append(cartItem);
+    }
+
+    discount = subtotal * 0.1;
+    total = subtotal - discount;
+
+    c(".subtotal span:last-child").innerHTML = `$ ${subtotal.toFixed(2)}`;
+    c(".discount span:last-child").innerHTML = `$ ${discount.toFixed(2)}`;
+    c(".total span:last-child").innerHTML = `$ ${total.toFixed(2)}`;
+  } else {
+    c("aside").classList.remove("show");
+    c("aside").style.left = "100vw";
+  }
+}
